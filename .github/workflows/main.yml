@@ -24,9 +24,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             mkdir -p /dockerized/containers/rentered_zen
-            if [ -f Dockerfile ]; then
-              cp Dockerfile /dockerized/containers/rentered_zen/Dockerfile
+            if [ -f "$GITHUB_WORKSPACE/Dockerfile" ]; then
+               cp "$GITHUB_WORKSPACE/Dockerfile" /dockerized/containers/rentered_zen/Dockerfile
             else
-              echo "Error: Dockerfile not found."
-              exit 1
+               echo "Error: Dockerfile not found in the root of the repository."
+               exit 1
             fi
+
