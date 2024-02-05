@@ -20,4 +20,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             mkdir -p /dockerized/containers/rentered_zen
-            cp Dockerfile /dockerized/containers/rentered_zen/Dockerfile
+            if [ -f Dockerfile ]; then
+              cp Dockerfile /dockerized/containers/rentered_zen/Dockerfile
+            else
+              echo "Error: Dockerfile not found."
+              exit 1
+            fi
