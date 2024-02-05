@@ -9,25 +9,21 @@ jobs:
  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: List files in the repository
-        run: |
-          ls -la
+      - uses: actions/checkout@v2
 
       - name: Copy Dockerfile to VPS
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "Dockerfile"
+          target: "/dockerized/containers/rentered_zen/"
+
+      - name: Verify Dockerfile copied
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            mkdir -p /dockerized/containers/rentered_zen
-            if [ -f "$GITHUB_WORKSPACE/Dockerfile" ]; then
-               cp "$GITHUB_WORKSPACE/Dockerfile" /dockerized/containers/rentered_zen/Dockerfile
-            else
-               echo "Error: Dockerfile not found in the root of the repository."
-               exit 1
-            fi
-
+          script: ls -la /dockerized/containers/rentered_zen/
