@@ -1,0 +1,23 @@
+name: Deploy to Ubuntu VPS
+
+on:
+ push:
+    branches:
+      - main # Trigger on push to main branch
+
+jobs:
+ deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Copy Dockerfile to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /dockerized/containers/rentered_zen
+            cp Dockerfile /dockerized/containers/rentered_zen/Dockerfile
