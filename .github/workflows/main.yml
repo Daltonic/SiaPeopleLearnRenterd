@@ -28,22 +28,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
+          source: "Dockerfile"
           target: "/dockerized/containers/rentered_zen/"
 
-      - name: Create .env file
-        uses: appleboy/ssh-action@v0.1.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cat << EOF > /dockerized/containers/rentered_zen/.env
-            RENTERD_API_PASSWORD=${{ secrets.RENTERD_API_PASSWORD }}
-            RENTERD_SEED=${{ secrets.RENTERD_SEED }}
-            EOF
-
-      - name: Verify Project copied
+      - name: Verify Dockerfile copied
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.SSH_HOST }}
