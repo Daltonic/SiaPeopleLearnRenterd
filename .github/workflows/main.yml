@@ -28,10 +28,22 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "Dockerfile"
+          source: "."
           target: "/dockerized/containers/rentered_zen/"
 
-      - name: Verify Dockerfile copied
+      - name: Create .env file
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cat << EOF > /dockerized/containers/rentered_zen/.env
+            RENTERD_API_PASSWORD=${{ secrets.RENTERD_API_PASSWORD }}
+            RENTERD_SEED=${{ secrets.RENTERD_SEED }}
+            EOF
+
+      - name: Verify Project copied
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -39,24 +51,37 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: ls -la /dockerized/containers/rentered_zen/
 
-      - name: Stop Docker container if exists
-        uses: appleboy/ssh-action@v0.1.3
-        with:
-            host: ${{ secrets.SSH_HOST }}
-            username: ${{ secrets.SSH_USERNAME }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            script: |
-              if [ -d "/dockerized/containers/rentered_zen/" ] && docker ps -a --filter "name=rentered_zen_instance" --format "{{.Names}}" | grep -q "^rentered_zen_instance$"; then
-                docker stop rentered_zen_instance || true
-              fi
-              
-      - name: Spin up Docker container
+      - name: Stop and remove Docker container if exists
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /dockerized/containers/rentered_zen/
-            docker build -t rentered_zen .
-            docker run -d --name rentered_zen_instance rentered_zen
+            if [ -d "/dockerized/containers/rentered_zen/" ] && docker ps -a --filter "name=rentered_zen_instance" --format "{{.Names}}" | grep -q "^rentered_zen_instance$"; then
+              echo "Stopping and removing rentered_zen_instance"
+              docker stop rentered_zen_instance || true
+              docker rm rentered_zen_instance || true
+            fi
+
+      - name: Create Docker volume if not exists
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USERNAME }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            script: |
+              if ! docker volume inspect rentered_zen_volume > /dev/null 2>&1; then
+                docker volume create rentered_zen_volume
+              fi
+
+      - name: Spin up Docker container with persistent volume
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USERNAME }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            script: |
+              cd /dockerized/containers/rentered_zen/
+              docker build -t rentered_zen .
+              docker run -d --name rentered_zen_instance -p 7070:7070 -p 9880:9880 -p 9881:9881 -v rentered_zen_volume:/data rentered_zen
