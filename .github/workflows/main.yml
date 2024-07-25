@@ -41,6 +41,8 @@ jobs:
             cat << EOF > /dockerized/containers/rentered_zen/.env
             RENTERD_SEED=${{ secrets.RENTERD_SEED }}
             RENTERD_API_PASSWORD=${{ secrets.RENTERD_API_PASSWORD }}
+            RENTERD_LOG_LEVEL=debug
+            RENTERD_LOG_DATABASE_LEVEL=error
             EOF
 
       - name: Verify Project copied
