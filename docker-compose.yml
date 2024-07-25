@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   renterd:
-    image: peterjanbrone/renterd:latest
+    image: ghcr.io/siafoundation/renterd:master-zen
     env_file:
       - .env
     ports:
